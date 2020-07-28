@@ -91,7 +91,7 @@ $color-light: $color-gray-200;
 /**
  * Deprecated Colors
  */
-$color-gray-700: $color-gray-700;
+$color-dark-grey: $color-gray-700;
 $color-light-grey: $color-gray-500;
 $color-positive: $color-green-600;
 $color-positive-outline: rgba($color-positive, 0.25);
@@ -200,14 +200,21 @@ $spacing: (
 );
 
 /**
+ * Margin
+ */
+ $margin: map-merge((
+  auto: auto
+), $spacing);
+
+/**
  * Fields
  */
 $field-input-padding: .5rem;
 $field-input-height: 2.25rem;
 $field-input-line-height: 1.25rem;
 $field-input-font-size: $text-base;
-$field-input-color-before: $color-gray-700;
-$field-input-color-after: $color-gray-700;
+$field-input-color-before: $color-dark-grey;
+$field-input-color-after: $color-dark-grey;
 $field-input-border: 1px solid $color-border;
 $field-input-focus-border: 1px solid $color-focus;
 $field-input-focus-outline: 2px solid $color-focus-outline;
