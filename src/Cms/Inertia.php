@@ -135,10 +135,26 @@ class Inertia extends \Kirby\Inertia\Inertia
     public static function model($model, array $merge = [])
     {
         $blueprint = $model->blueprint();
-        $tabs      = $blueprint->tabs();
 
+        // get all tabs for the model view
+        $tabs = array_map(function ($tab) {
+            return [
+                'icon'  => $tab['icon'],
+                'label' => $tab['label'],
+                'link'  => $tab['link'],
+                'name'  => $tab['name']
+            ];
+        }, $blueprint->tabs());
+
+        // get the current tab definition
         if (!$tab = $blueprint->tab(param('tab'))) {
             $tab = $tabs[0] ?? [];
+        }
+
+        foreach ($tab['columns'] as $columnIndex => $column) {
+            foreach ($column['sections'] as $sectionIndex => $section) {
+                $tab['columns'][$columnIndex]['sections'][$sectionIndex] = $blueprint->section($sectionIndex)->toResponse();
+            }
         }
 
         return array_merge([

@@ -1,10 +1,10 @@
 <template>
 
-  <section v-if="isLoading === false" class="k-files-section">
+  <section class="k-files-section">
 
     <header class="k-section-header">
       <k-headline>
-        {{ headline }} <abbr v-if="options.min" :title="$t('section.required')">*</abbr>
+        {{ headline }} <abbr v-if="min" :title="$t('section.required')">*</abbr>
       </k-headline>
       <k-button-group v-if="add">
         <k-button icon="upload" @click="upload">{{ $t("add") }}</k-button>
@@ -23,13 +23,13 @@
     <template v-else>
       <k-dropzone :disabled="add === false" @drop="drop">
         <k-collection
-          v-if="data.length"
+          v-if="files.length"
           :help="help"
-          :items="data"
-          :layout="options.layout"
+          :items="items(files)"
+          :layout="layout"
           :pagination="pagination"
-          :sortable="options.sortable"
-          :size="options.size"
+          :sortable="sortable"
+          :size="size"
           :data-invalid="isInvalid"
           @sort="sort"
           @paginate="paginate"
@@ -37,12 +37,12 @@
         />
         <template v-else>
           <k-empty
-            :layout="options.layout"
+            :layout="layout"
             :data-invalid="isInvalid"
             icon="image"
             @click="if (add) upload()"
           >
-            {{ options.empty || $t('files.empty') }}
+            {{ empty || $t('files.empty') }}
           </k-empty>
           <footer class="k-collection-footer">
             <k-text
@@ -64,26 +64,24 @@
 </template>
 
 <script>
-import CollectionSectionMixin from "@/mixins/section/collection.js";
 
 export default {
-  mixins: [CollectionSectionMixin],
-  computed: {
-    add() {
-      if (this.$permissions.files.create && this.options.upload !== false) {
-        return this.options.upload;
-      } else {
-        return false;
-      }
-    },
-  },
-  created() {
-    this.load();
-    this.$events.$on("model.update", this.reload);
-  },
-  destroyed() {
-    this.$events.$off("model.update", this.reload);
-  },
+  props: [
+    "accept",
+    "apiUrl",
+    "empty",
+    "files",
+    "headline",
+    "help",
+    "layout",
+    "link",
+    "max",
+    "min",
+    "pagination",
+    "size",
+    "sortable",
+    "upload"
+  ],
   methods: {
     action(file, action) {
 
@@ -105,12 +103,12 @@ export default {
           });
           break;
         case "remove":
-          if (this.data.length <= this.options.min) {
-            const number = this.options.min > 1 ? "plural" : "singular";
+          if (this.data.length <= this.min) {
+            const number = this.min > 1 ? "plural" : "singular";
             this.$store.dispatch("notification/error", {
               message: this.$t("error.section.files.min." + number, {
-                section: this.options.headline || this.name,
-                min: this.options.min
+                section: this.headline || this.name,
+                min: this.min
               })
             });
             break;
@@ -142,7 +140,7 @@ export default {
             });
         };
 
-        file.sortable = this.options.sortable;
+        file.sortable = this.sortable;
         file.column   = this.column;
 
         return file;
@@ -156,7 +154,7 @@ export default {
       });
     },
     sort(items) {
-      if (this.options.sortable === false) {
+      if (this.sortable === false) {
         return false;
       }
 
@@ -165,7 +163,7 @@ export default {
       });
 
       this.$api
-        .patch(this.options.apiUrl + "/files/sort", {
+        .patch(this.apiUrl + "/files/sort", {
           files: items,
           index: this.pagination.offset
         })

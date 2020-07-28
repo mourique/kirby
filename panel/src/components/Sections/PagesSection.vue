@@ -1,9 +1,9 @@
 <template>
-  <section v-if="isLoading === false" class="k-pages-section">
+  <section class="k-pages-section">
 
     <header class="k-section-header">
-      <k-headline :link="options.link">
-        {{ headline }} <abbr v-if="options.min" :title="$t('section.required')">*</abbr>
+      <k-headline :link="link">
+        {{ headline }} <abbr v-if="min" :title="$t('section.required')">*</abbr>
       </k-headline>
 
       <k-button-group v-if="add">
@@ -11,26 +11,15 @@
       </k-button-group>
     </header>
 
-    <template v-if="error">
-      <k-box theme="negative">
-        <k-text size="small">
-          <strong>
-            {{ $t("error.section.notLoaded", { name: name }) }}:
-          </strong>
-          {{ error }}
-        </k-text>
-      </k-box>
-    </template>
-
-    <template v-else>
+    <template>
       <k-collection
-        v-if="data.length"
-        :layout="options.layout"
+        v-if="pages.length"
+        :layout="layout"
         :help="help"
-        :items="data"
+        :items="items(pages)"
         :pagination="pagination"
-        :sortable="options.sortable"
-        :size="options.size"
+        :sortable="sortable"
+        :size="size"
         :data-invalid="isInvalid"
         @change="sort"
         @paginate="paginate"
@@ -39,12 +28,12 @@
 
       <template v-else>
         <k-empty
-          :layout="options.layout"
+          :layout="layout"
           :data-invalid="isInvalid"
           icon="page"
           @click="create"
         >
-          {{ options.empty || $t('pages.empty') }}
+          {{ empty || $t('pages.empty') }}
         </k-empty>
         <footer class="k-collection-footer">
           <k-text
@@ -70,27 +59,27 @@
 </template>
 
 <script>
-import CollectionSectionMixin from "@/mixins/section/collection.js";
-
 export default {
-  mixins: [CollectionSectionMixin],
-  computed: {
-    add() {
-      return this.options.add && this.$permissions.pages.create;
-    }
-  },
-  created() {
-    this.load();
-    this.$events.$on("page.changeStatus", this.reload);
-  },
-  destroyed() {
-    this.$events.$off("page.changeStatus", this.reload);
-  },
+  props: [
+    "empty",
+    "headline",
+    "help",
+    "layout",
+    "link",
+    "max",
+    "min",
+    "name",
+    "pages",
+    "pagination",
+    "parent",
+    "size",
+    "sortable",
+  ],
   methods: {
     create() {
       if (this.add) {
         this.$refs.create.open(
-          this.options.link || this.parent,
+          this.link || this.parent,
           this.parent + "/children/blueprints",
           this.name
         );
@@ -135,12 +124,12 @@ export default {
           break;
         }
         case "remove": {
-          if (this.data.length <= this.options.min) {
-            const number = this.options.min > 1 ? "plural" : "singular";
+          if (this.data.length <= this.min) {
+            const number = this.min > 1 ? "plural" : "singular";
             this.$store.dispatch("notification/error", {
               message: this.$t("error.section.pages.min." + number, {
-                section: this.options.headline || this.name,
-                min: this.options.min
+                section: this.headline || this.name,
+                min: this.min
               })
             });
             break;
@@ -178,7 +167,7 @@ export default {
             });
         };
 
-        page.sortable = page.permissions.sort && this.options.sortable;
+        page.sortable = page.permissions.sort && this.sortable;
         page.column   = this.column;
 
         return page;

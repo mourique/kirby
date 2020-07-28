@@ -16,25 +16,15 @@
 </template>
 
 <script>
-import SectionMixin from "@/mixins/section/section.js";
-
 export default {
-  mixins: [SectionMixin],
   inheritAttrs: false,
-  data() {
-    return {
-      fields: {},
-      isLoading: true,
-      issue: null
-    };
+  props: {
+    fields: Object,
   },
   computed: {
     values() {
       return this.$store.getters["content/values"]();
     }
-  },
-  created: function() {
-    this.fetch();
   },
   methods: {
     input(values, field, fieldName) {
@@ -42,28 +32,6 @@ export default {
         fieldName,
         values[fieldName]
       ]);
-    },
-    fetch() {
-      this.$api
-        .get(this.parent + "/sections/" + this.name)
-        .then(response => {
-          this.fields = response.fields;
-
-          Object.keys(this.fields).forEach(name => {
-            this.fields[name].section = this.name;
-            this.fields[name].endpoints = {
-              field: this.parent + "/fields/" + name,
-              section: this.parent + "/sections/" + this.name,
-              model: this.parent
-            };
-          });
-
-          this.isLoading = false;
-        })
-        .catch(error => {
-          this.issue = error;
-          this.isLoading = false;
-        });
     },
     onSubmit($event) {
       this.$events.$emit("keydown.cmd.s", $event);

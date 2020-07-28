@@ -17,7 +17,7 @@ class Inertia
 
     public static function json(array $response = [])
     {
-        return Response::json($response, null, null, [
+        return Response::json($response, null, get('pretty'), [
             'Vary'      => 'Accept',
             'X-Inertia' => 'true'
         ]);
